@@ -9,16 +9,21 @@ function RechercheResultats() {
   const params = new URLSearchParams(location.search);
   const voitureId = params.get('voitureId');
 
+  const dateDebut = params.get('dateDebut');
+  const heureDebut = params.get('heureDebut');
+  const dateFin = params.get('dateFin');
+  const heureFin = params.get('heureFin');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (voitureId) {
-          // Cas 1 : une seule voiture est ciblée
           const res = await axios.get(`${import.meta.env.VITE_API_URL}/voitures/${voitureId}`);
           setVoitureFiltrée(res.data);
-        } else {
-          // Cas 2 : recherche normale avec d'autres paramètres (date, etc.)
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/voitures`);
+        } else if (dateDebut && heureDebut && dateFin && heureFin) {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/voitures/rechercher`, {
+            params: { dateDebut, heureDebut, dateFin, heureFin }
+          });
           setVoitures(res.data);
         }
       } catch (err) {
@@ -27,7 +32,7 @@ function RechercheResultats() {
     };
 
     fetchData();
-  }, [voitureId]);
+  }, [voitureId, dateDebut, heureDebut, dateFin, heureFin]);
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -46,7 +51,7 @@ function RechercheResultats() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
           {voitures.map((v) => (
             <div key={v._id} style={{ border: '1px solid #ccc', padding: '1rem', width: '300px', borderRadius: '8px' }}>
-              <img src={v.image} alt={v.marque} style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '4px' }} />
+              <img src={v.image || v.images?.[0]} alt={v.marque} style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '4px' }} />
               <h3>{v.marque} {v.modele}</h3>
               <p><strong>Localisation :</strong> {v.localisation}</p>
               <p><strong>Tarif :</strong> {v.tarif} € / jour</p>
